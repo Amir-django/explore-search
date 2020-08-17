@@ -1,0 +1,61 @@
+@login_required(login_url='/facilitator/login/')
+def facilitator_Dashboard_explore_courses_page(request):   
+    
+    if request.method=='POST':
+        asd = request.POST['searchdata']
+        appli=Applicants.objects.get(user=request.user)
+        faci=Facilitator.objects.get(user=appli)
+        zxc = offer.objects.filter(Fid=faci.Fid)
+        print(zxc)
+        value=1
+        course=[]
+        context={}
+        course1=[]
+        
+       
+        #course = Course.objects.filter(title=zxc.Cid.title)
+        for qwerty in zxc:
+            #coursess = Course.objects.filter(Cid=qwerty.Cid.Cid, title=asd)
+            #if coursess.exists():
+                #course.append(coursess)
+            if qwerty.Cid.title==asd or qwerty.Cid.days==asd:
+                course.append(qwerty.Cid)
+        
+
+    else:
+        appli=Applicants.objects.get(user=request.user)
+        faci=Facilitator.objects.get(user=appli)
+        course=offer.objects.filter(Fid=faci.Fid)
+        course1=[]
+        context={}
+        value=0
+    if len(course)==0:
+        context.update({'count':0})
+        return render(request,'facilitators/Dashboard/explore_courses.html',context)
+    
+    if value==1:
+        for i in range(0,len(course)):
+            subcategory=SubCategory.objects.get(name=course[i].subCat_id)
+            context.setdefault('subcategory',set()).add(subcategory)
+            course1.append(course[i])
+    else:
+        for i in range(0,len(course)):
+            print(course[0])
+            subcategory=SubCategory.objects.get(name=course[i].Cid.subCat_id)
+            context.setdefault('subcategory',set()).add(subcategory)
+            course1.append(course[i].Cid)
+    category=[]
+    for cat in context['subcategory']:
+        val=Course.objects.filter(subCat_id=cat.subCat_id)
+        val1=[]
+        for c in val:
+            if c in course1:
+                val1.append(c)
+        n=len(val1)
+        nSlides=(n//3)+ceil(n/3-n//3)
+        l=[val1,range(1,nSlides),n]
+        category.append(l)
+    context.update({'category':category})
+    print(context)
+    return render(request, 'facilitators/Dashboard/explore_courses.html',context)
+
